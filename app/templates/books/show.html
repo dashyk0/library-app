@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="book-detail-page">
+    <div class="book-container">
+        <!-- Левая часть: обложка -->
+        <div class="book-cover-area">
+            <div class="book-cover-frame">
+                {% if book.cover_image %}
+                    <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}" class="book-cover-img">
+                {% else %}
+                    <div class="book-cover-placeholder">📚</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Правая часть: информация -->
+        <div class="book-info-area">
+            <h1 class="book-title">{{ book.title }}</h1>
+            <p class="book-meta-detail">
+                {{ book.author.full_name }} | {{ book.publication_year or 'Год не указан' }} | 
+                {% for genre in book.genres %}
+                    {{ genre.name }}{% if not loop.last %}, {% endif %}
+                {% else %}
+                    Жанр не указан
+                {% endfor %}
+            </p>
+            
+            <div class="book-description-detail">
+                <p>{{ book.description or 'Нет описания' }}</p>
+            </div>
+            
+            <div class="book-status-detail">
+                {% if book.copies_available > 0 %}
+                    <span class="status-available">В наличии</span>
+                {% else %}
+                    <span class="status-unavailable">Нет в наличии</span>
+                {% endif %}
+            </div>
+            
+            <!-- Кнопки для библиотекаря -->
+            {% if current_user.is_authenticated and current_user.is_librarian() %}
+                <div class="book-actions">
+                    {% if book.copies_available > 0 %}
+                        <a href="{{ url_for('loans.issue_book', book_id=book.id) }}" class="action-btn issue-btn">Выдать книгу</a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('loans.select_return_book') }}" class="action-btn return-btn">Вернуть книгу</a>
+                    
+                    <a href="{{ url_for('books.edit', id=book.id) }}" class="action-btn edit-btn">Редактировать книгу</a>
+                </div>
+            {% endif %}
+            
+            <a href="{{ url_for('books.index') }}" class="back-link">← Назад к каталогу</a>
+        </div>
+    </div>
+</div>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.book-detail-page {
+    background: #EDEBE4;
+    width: 100%;
+    min-height: 100vh;
+    padding: 60px 40px;
+}
+
+.book-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    gap: 80px;
+}
+
+.book-cover-area {
+    flex: 0 0 400px;
+}
+
+.book-cover-frame {
+    background: #edece6;
+    border: 15px solid #edece6;
+    box-shadow: 2px 6px 34px 4px rgba(62, 62, 62, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.book-cover-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.book-cover-placeholder {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: #d4c8bc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+}
+
+.book-info-area {
+    flex: 1;
+}
+
+.book-title {
+    font-family: 'Prata', serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: #111111;
+    margin-bottom: 20px;
+}
+
+.book-meta-detail {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: 3.2px;
+    color: #888888;
+    margin-bottom: 30px;
+}
+
+.book-description-detail {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 300;
+    font-size: 20px;
+    letter-spacing: 3.2px;
+    color: #000000;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.book-status-detail {
+    margin-bottom: 40px;
+}
+
+.status-available {
+    display: inline-block;
+    background: #D4EFC0;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #543731;
+    letter-spacing: 0.6px;
+}
+
+.status-unavailable {
+    display: inline-block;
+    background: #EFC0C0;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #543731;
+    letter-spacing: 0.6px;
+}
+
+.book-actions {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.action-btn {
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+    opacity: 0.8;
+}
+
+.issue-btn {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+
+.return-btn {
+    background: #EFD6C0;
+    color: #543731;
+}
+
+.edit-btn {
+    background: #EFD6C0;
+    color: #543731;
+}
+
+.back-link {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #543831;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 1000px) {
+    .book-container {
+        flex-direction: column;
+        gap: 40px;
+    }
+    .book-cover-area {
+        flex: 0 0 auto;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    .book-title {
+        font-size: 32px;
+    }
+    .book-meta-detail, .book-description-detail {
+        font-size: 16px;
+        letter-spacing: 1.6px;
+    }
+    .book-detail-page {
+        padding: 30px 20px;
+    }
+}
+</style>
+{% endblock %}

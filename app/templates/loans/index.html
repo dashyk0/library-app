@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="loans-container">
+    <div class="loans-header">
+        <div class="header-top">
+            <a href="{{ url_for('admin.dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Назад к панели
+            </a>
+        </div>
+        <h1 class="loans-title">Все выдачи</h1>
+        <p class="loans-subtitle">История выдачи и возврата книг</p>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="filters-bar">
+        <a href="{{ url_for('loans.index', status='active') }}" class="filter-btn {% if status == 'active' %}active{% endif %}">
+            <i class="fas fa-hourglass-half"></i> Активные
+        </a>
+        <a href="{{ url_for('loans.index', status='history') }}" class="filter-btn {% if status == 'history' %}active{% endif %}">
+            <i class="fas fa-history"></i> История
+        </a>
+        <a href="{{ url_for('loans.index', status='all') }}" class="filter-btn {% if status == 'all' %}active{% endif %}">
+            <i class="fas fa-list"></i> Все
+        </a>
+    </div>
+
+    <!-- Таблица выдач -->
+    <div class="loans-table-wrapper">
+        <table class="loans-table">
+            <thead>
+                <tr>
+                    <th>Книга</th>
+                    <th>Читатель</th>
+                    <th>Библиотекарь</th>
+                    <th>Дата выдачи</th>
+                    <th>Срок возврата</th>
+                    <th>Дата возврата</th>
+                    <th>Статус</th>
+                    <th>Штраф</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in loans %}
+                <tr class="{% if loan.is_overdue and not loan.return_date %}overdue-row{% endif %}">
+                    <td>
+                        <strong>{{ loan.copy.book.title }}</strong><br>
+                        <small>{{ loan.copy.book.author.full_name }}</small>
+                    </td>
+                    <td>{{ loan.reader.user.full_name or loan.reader.user.username }}</td>
+                    <td>{{ loan.librarian.full_name or loan.librarian.username }}</td>
+                    <td>{{ loan.issue_date.strftime('%d.%m.%Y') }}</td>
+                    <td class="due-date">{{ loan.due_date.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ loan.return_date.strftime('%d.%m.%Y') if loan.return_date else '—' }}</td>
+                    <td>
+                        {% if loan.return_date %}
+                            <span class="loan-status returned">Возвращена</span>
+                        {% elif loan.is_overdue %}
+                            <span class="loan-status overdue">Просрочена</span>
+                        {% else %}
+                            <span class="loan-status active">На руках</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if loan.fine_amount and loan.fine_amount > 0 %}
+                            <span class="fine">{{ loan.fine_amount }} руб.</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-message">Нет данных о выдачах</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.loans-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+
+.loans-header {
+    margin-bottom: 30px;
+}
+
+.header-top {
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: #e0c4a8;
+    transform: translateX(-3px);
+}
+
+.loans-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 5px;
+}
+
+.loans-subtitle {
+    color: #8b6b5d;
+    font-size: 16px;
+}
+
+/* Фильтры */
+.filters-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 10px 24px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid #e0d4c8;
+}
+
+.filter-btn:hover {
+    background: #543831;
+    color: white;
+    border-color: #543831;
+}
+
+.filter-btn.active {
+    background: #543831;
+    color: white;
+    border-color: #543831;
+}
+
+/* Таблица */
+.loans-table-wrapper {
+    background: white;
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.loans-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.loans-table th {
+    text-align: left;
+    padding: 16px 15px;
+    background: #F8F1E9;
+    color: #543831;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 2px solid #e0d4c8;
+}
+
+.loans-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #f0e8e0;
+    color: #2c1810;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.loans-table tr:hover {
+    background: #FDF8F2;
+}
+
+.overdue-row {
+    background: #FFF5F0;
+}
+
+.overdue-row:hover {
+    background: #FFEFE8;
+}
+
+.due-date {
+    font-weight: 500;
+}
+
+/* Статусы */
+.loan-status {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.loan-status.active {
+    background: #EFD6C0;
+    color: #d4a05a;
+}
+
+.loan-status.overdue {
+    background: #EFC0C0;
+    color: #8b3a3a;
+}
+
+.loan-status.returned {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+
+.fine {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 40px !important;
+    color: #999;
+}
+
+@media (max-width: 900px) {
+    .loans-container {
+        padding: 20px;
+    }
+    .loans-table th, .loans-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+    .filter-btn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="catalog-section">
+    <div class="catalog-header">
+        <h1 class="catalog-title">Каталог книг</h1>
+        <div class="search-wrapper">
+            <form method="GET" class="search-form">
+                <div class="search-field">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E" alt="" class="search-icon">
+                    <input type="text" name="search" class="search-input" placeholder="Поиск" value="{{ search or '' }}">
+                </div>
+                <button type="submit" class="search-btn">Найти</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Все книги -->
+    <div class="books-grid">
+        {% for book in books.items %}
+        <article class="book-card">
+            <div class="book-cover">
+                {% if book.cover_image %}
+                    <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}">
+                {% else %}
+                    <div class="cover-placeholder">📚</div>
+                {% endif %}
+            </div>
+            <div class="book-info">
+                <h3 class="book-title">{{ book.title[:35] }}{% if book.title|length > 35 %}...{% endif %}</h3>
+                <p class="book-author">{{ book.author.full_name[:25] }}{% if book.author.full_name|length > 25 %}...{% endif %}</p>
+                <span class="book-status {% if book.copies_available > 0 %}status-available{% else %}status-unavailable{% endif %}">
+                    {% if book.copies_available > 0 %}В наличии{% else %}Нет в наличии{% endif %}
+                </span>
+                <a href="{{ url_for('books.show', id=book.id) }}" class="btn-details">Подробнее</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if books.pages > 1 %}
+    <nav class="pagination">
+        {% if books.has_prev %}
+            <a href="{{ url_for('books.index', page=books.prev_num, search=search) }}" class="page-link">←</a>
+        {% endif %}
+        {% for p in books.iter_pages() %}
+            {% if p %}
+                <a href="{{ url_for('books.index', page=p, search=search) }}" class="page-link {% if p == books.page %}active{% endif %}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if books.has_next %}
+            <a href="{{ url_for('books.index', page=books.next_num, search=search) }}" class="page-link">→</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    <!-- Популярные книги (после основного каталога) -->
+    {% if popular_books %}
+    <div class="popular-section">
+        <h2 class="popular-title">Популярные книги</h2>
+        <div class="popular-grid">
+            {% for book in popular_books %}
+            <article class="book-card popular-card">
+                <div class="book-cover">
+                    {% if book.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="cover-placeholder">📚</div>
+                    {% endif %}
+                </div>
+                <div class="book-info">
+                    <div class="popular-rank-badge">{{ loop.index }}</div>
+                    <h3 class="book-title">{{ book.title[:35] }}{% if book.title|length > 35 %}...{% endif %}</h3>
+                    <p class="book-author">{{ book.author.full_name[:25] }}{% if book.author.full_name|length > 25 %}...{% endif %}</p>
+                    <span class="popular-count-badge">{{ book.loan_count }} выдач</span>
+                    <span class="book-status {% if book.copies_available > 0 %}status-available{% else %}status-unavailable{% endif %}">
+                        {% if book.copies_available > 0 %}В наличии{% else %}Нет в наличии{% endif %}
+                    </span>
+                    <a href="{{ url_for('books.show', id=book.id) }}" class="btn-details">Подробнее</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.catalog-section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 40px;
+    background: #F3F2EC;
+}
+
+.catalog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.catalog-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: #543831;
+}
+
+/* Все книги */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.book-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #DEE2E6;
+    box-shadow: 0px 4px 4px rgba(0,0,0,0.25);
+    transition: transform 0.2s;
+    position: relative;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.book-cover {
+    height: 200px;
+    background: #f0e6dc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-placeholder {
+    font-size: 64px;
+}
+
+.book-info {
+    padding: 16px;
+}
+
+.book-title {
+    font-family: 'Prata', serif;
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 4px;
+}
+
+.book-author {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    color: #543831;
+    margin-bottom: 12px;
+}
+
+.book-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.status-available {
+    background: #D4EFC0;
+    color: #543731;
+}
+
+.status-unavailable {
+    background: #EFC0C0;
+    color: #543731;
+}
+
+.btn-details {
+    display: block;
+    text-align: center;
+    background: #EFD6C0;
+    padding: 8px;
+    border-radius: 8px;
+    color: #543731;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.btn-details:hover {
+    background: #e0c4a8;
+}
+
+/* Популярные книги */
+.popular-section {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid #e0d4c8;
+}
+
+.popular-title {
+    font-family: 'Prata', serif;
+    font-size: 28px;
+    color: #543831;
+    margin-bottom: 30px;
+}
+
+.popular-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.popular-card {
+    position: relative;
+}
+
+.popular-rank-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 32px;
+    height: 32px;
+    background: #543831;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.popular-count-badge {
+    display: inline-block;
+    background: #EFD6C0;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: #d4a05a;
+    margin-bottom: 10px;
+}
+
+.search-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+}
+
+.search-field {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 8px 16px;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    padding: 8px;
+    font-size: 14px;
+    width: 250px;
+}
+
+.search-btn {
+    background: #543831;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.page-link {
+    padding: 8px 14px;
+    background: white;
+    border: 1px solid #e0d4c8;
+    border-radius: 8px;
+    color: #543831;
+    text-decoration: none;
+}
+
+.page-link.active, .page-link:hover {
+    background: #543831;
+    color: white;
+}
+
+@media (max-width: 1200px) {
+    .books-grid, .popular-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+    .books-grid, .popular-grid { grid-template-columns: repeat(2, 1fr); }
+    .catalog-header { flex-direction: column; gap: 20px; }
+}
+@media (max-width: 600px) {
+    .books-grid, .popular-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}

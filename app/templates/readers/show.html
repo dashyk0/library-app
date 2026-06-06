@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="reader-container">
+    <div class="reader-card">
+        <div class="reader-header">
+            <a href="{{ url_for('readers.index') }}" class="back-btn">← Назад к списку</a>
+            <h1 class="reader-title">Читатель: {{ reader.user.full_name or reader.user.username }}</h1>
+        </div>
+
+        <div class="reader-info">
+            <div class="info-group">
+                <h3>Личная информация</h3>
+                <div class="info-row">
+                    <span class="info-label">Читательский билет</span>
+                    <span class="info-value">{{ reader.library_card_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Логин</span>
+                    <span class="info-value">{{ reader.user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ reader.user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Телефон</span>
+                    <span class="info-value">{{ reader.user.phone or 'Не указан' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Полное имя</span>
+                    <span class="info-value">{{ reader.user.full_name or 'Не указано' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Дата рождения</span>
+                    <span class="info-value">{{ reader.birth_date.strftime('%d.%m.%Y') if reader.birth_date else 'Не указана' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Адрес</span>
+                    <span class="info-value">{{ reader.address or 'Не указан' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Категория</span>
+                    <span class="info-value">{{ reader.reader_category or 'Не указана' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="loans-section">
+            <h3>Текущие выдачи</h3>
+            {% if active_loans %}
+                <div class="loans-list">
+                    {% for loan in active_loans %}
+                    <div class="loan-item">
+                        <div class="loan-book">
+                            <strong>{{ loan.copy.book.title }}</strong>
+                            <span>{{ loan.copy.book.author.full_name }}</span>
+                        </div>
+                        <div class="loan-dates">
+                            <span>Выдана: {{ loan.issue_date.strftime('%d.%m.%Y') }}</span>
+                            <span>До: {{ loan.due_date.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        <div class="loan-status">
+                            {% if loan.is_overdue %}
+                                <span class="status overdue">Просрочена</span>
+                            {% else %}
+                                <span class="status active">Активна</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty">Нет активных выдач</p>
+            {% endif %}
+        </div>
+
+        <div class="history-section">
+            <h3>История выдач</h3>
+            {% if loan_history %}
+                <div class="loans-list">
+                    {% for loan in loan_history %}
+                    <div class="loan-item">
+                        <div class="loan-book">
+                            <strong>{{ loan.copy.book.title }}</strong>
+                            <span>{{ loan.copy.book.author.full_name }}</span>
+                        </div>
+                        <div class="loan-dates">
+                            <span>Выдана: {{ loan.issue_date.strftime('%d.%m.%Y') }}</span>
+                            <span>Возвращена: {{ loan.return_date.strftime('%d.%m.%Y') if loan.return_date else '—' }}</span>
+                        </div>
+                        <div class="loan-status">
+                            <span class="status returned">Возвращена</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty">Нет истории выдач</p>
+            {% endif %}
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('readers.edit', id=reader.reader_id) }}" class="btn-edit">Редактировать данные</a>
+            {% if current_user.is_admin() %}
+            <form method="POST" action="{{ url_for('readers.delete', id=reader.reader_id) }}" onsubmit="return confirm('Вы уверены, что хотите удалить читателя? Это действие необратимо.');" style="display: inline;">
+                <button type="submit" class="btn-delete">Удалить читателя</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.reader-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.reader-card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.reader-header {
+    margin-bottom: 30px;
+}
+.back-btn {
+    display: inline-block;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+.reader-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+}
+.info-group h3, .loans-section h3, .history-section h3 {
+    font-size: 20px;
+    color: #543831;
+    margin-bottom: 20px;
+    border-left: 4px solid #543831;
+    padding-left: 15px;
+}
+.info-row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0e8e0;
+}
+.info-label {
+    width: 150px;
+    font-weight: 500;
+    color: #595959;
+}
+.info-value {
+    flex: 1;
+    color: #2c1810;
+}
+.loans-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.loan-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #FDF8F2;
+    border-radius: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.loan-book {
+    flex: 2;
+}
+.loan-book strong {
+    display: block;
+    color: #543831;
+}
+.loan-dates {
+    flex: 1;
+    font-size: 13px;
+    color: #8b6b5d;
+}
+.loan-status .status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+.status.active {
+    background: #EFD6C0;
+    color: #d4a05a;
+}
+.status.overdue {
+    background: #EFC0C0;
+    color: #8b3a3a;
+}
+.status.returned {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+.empty {
+    color: #999;
+    padding: 20px;
+    text-align: center;
+}
+.action-buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+}
+.btn-edit {
+    background: #543831;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 14px;
+}
+.btn-delete {
+    background: #EFC0C0;
+    color: #8b3a3a;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+}
+</style>
+{% endblock %}

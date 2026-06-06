@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — KeeperBook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #543831;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .flourish {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .flourish svg {
+            width: 100%;
+            height: 100%;
+        }
+        .register-container {
+            display: flex;
+            gap: 170px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .register-image {
+            width: 332px;
+            height: 500px;
+            border-radius: 13.2px;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .register-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .register-card {
+            background: #543831;
+            border-radius: 13.2px;
+            width: 500px;
+            padding: 45px 0 45px 0;
+        }
+        .register-title {
+            font-family: 'Roboto', sans-serif;
+            color: white;
+            font-size: 32px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .register-divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+            margin-bottom: 30px;
+        }
+        .register-form {
+            width: 100%;
+        }
+        .form-field {
+            margin-bottom: 16px;
+        }
+        .field-label {
+            display: block;
+            color: white;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .field-input {
+            width: 100%;
+            height: 45px;
+            background: white;
+            border: none;
+            border-radius: 13.2px;
+            padding: 0 15px;
+            font-size: 14px;
+            color: #333;
+        }
+        .field-input:focus {
+            outline: none;
+        }
+        .register-btn {
+            width: 100%;
+            height: 50px;
+            background: #2c1810;
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0px 2px 6px 2px rgba(0,0,0,0.15), 0px 1px 2px 0px rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+        .register-btn:hover {
+            opacity: 0.9;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 12px;
+            color: white;
+        }
+        .login-link a {
+            color: white;
+            text-decoration: underline;
+        }
+        .error-message {
+            background: rgba(220,53,69,0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        @media (max-width: 900px) {
+            .register-container {
+                flex-direction: column;
+                gap: 40px;
+                padding: 20px;
+            }
+            .register-image {
+                width: 200px;
+                height: 300px;
+            }
+            .register-card {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flourish">
+        <svg viewBox="0 0 1440 800" preserveAspectRatio="none">
+            <path d="M0,400 C100,350 200,450 300,400 C400,350 500,450 600,400 C700,350 800,450 900,400 C1000,350 1100,450 1200,400 C1300,350 1400,450 1440,400" 
+                  stroke="rgba(255,255,255,0.15)" stroke-width="2" fill="none"/>
+            <path d="M100,390 C110,370 130,370 140,390 C150,410 130,410 120,400" 
+                  stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+            <path d="M300,410 C310,430 330,430 340,410 C350,390 330,390 320,400" 
+                  stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+            <path d="M600,390 C610,370 630,370 640,390 C650,410 630,410 620,400" 
+                  stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+            <path d="M900,410 C910,430 930,430 940,410 C950,390 930,390 920,400" 
+                  stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+            <path d="M1200,390 C1210,370 1230,370 1240,390 C1250,410 1230,410 1220,400" 
+                  stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/>
+            <circle cx="200" cy="400" r="4" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="500" cy="400" r="4" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="800" cy="400" r="4" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="1100" cy="400" r="4" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="1350" cy="400" r="4" fill="rgba(255,255,255,0.15)"/>
+        </svg>
+    </div>
+
+    <div class="register-container">
+        <div class="register-image">
+            <img src="{{ url_for('static', filename='images/book-cover.jpg') }}" alt="Книга">
+        </div>
+        <div class="register-card">
+            <h1 class="register-title">Создать аккаунт</h1>
+            <div class="register-divider"></div>
+            <form method="POST" class="register-form">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="error-message">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <div class="form-field">
+                    <label class="field-label">Введите почту</label>
+                    <input type="email" name="email" class="field-input" placeholder="example@mail.com" required>
+                </div>
+                <div class="form-field">
+                    <label class="field-label">Имя пользователя</label>
+                    <input type="text" name="username" class="field-input" placeholder="username" required>
+                </div>
+                <div class="form-field">
+                    <label class="field-label">Введите пароль</label>
+                    <input type="password" name="password" class="field-input" placeholder="********" required>
+                </div>
+                <div class="form-field">
+                    <label class="field-label">Подтвердите пароль</label>
+                    <input type="password" name="confirm_password" class="field-input" placeholder="********" required>
+                </div>
+                <button type="submit" class="register-btn">Зарегистрироваться</button>
+                <p class="login-link">
+                    Есть аккаунт? 
+                    <a href="{{ url_for('auth.login') }}">Войти</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

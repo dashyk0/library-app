@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="return-page">
+    <div class="return-container">
+        <div class="return-card">
+            <h1 class="return-title">Возврат книги</h1>
+            <div class="return-divider"></div>
+            
+            <div class="book-preview">
+                <div class="book-cover-mini">
+                    {% if book.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="mini-placeholder">📚</div>
+                    {% endif %}
+                </div>
+                <div class="book-info-mini">
+                    <h3>{{ book.title }}</h3>
+                    <p>{{ book.author.full_name }}</p>
+                </div>
+            </div>
+            
+            <form method="POST" class="return-form">
+                <div class="form-field">
+                    <label class="field-label">Выберите читателя, который возвращает книгу</label>
+                    <select name="reader_id" class="field-select" required>
+                        <option value="">— Выберите читателя —</option>
+                        {% for reader in readers %}
+                            <option value="{{ reader.reader_id }}">
+                                {{ reader.user.full_name or reader.user.username }} (Билет №{{ reader.library_card_number }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="submit-btn">Вернуть книгу</button>
+                <a href="{{ url_for('books.show', id=book.id) }}" class="cancel-btn">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.return-page {
+    background: #EDEBE4;
+    min-height: calc(100vh - 200px);
+    padding: 60px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.return-container {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.return-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.return-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+    margin-bottom: 20px;
+}
+
+.return-divider {
+    width: 100%;
+    height: 1px;
+    background: #e0d4c8;
+    margin-bottom: 30px;
+}
+
+.book-preview {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #F3F2EC;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.book-cover-mini {
+    width: 80px;
+    height: 100px;
+    background: #d4c8bc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.book-cover-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mini-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.book-info-mini h3 {
+    font-family: 'Prata', serif;
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 4px;
+}
+
+.book-info-mini p {
+    font-size: 14px;
+    color: #8b6b5d;
+    margin-bottom: 8px;
+}
+
+.return-form {
+    margin-top: 20px;
+}
+
+.form-field {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    display: block;
+    font-size: 14px;
+    color: #543831;
+    margin-bottom: 8px;
+}
+
+.field-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+    background: white;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #543831;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.cancel-btn {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: #EFD6C0;
+    color: #543731;
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 16px;
+}
+</style>
+{% endblock %}

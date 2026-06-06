@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="delete-header">
+            <a href="{{ url_for('admin.dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Назад к панели
+            </a>
+            <h1 class="delete-title">Удаление книги</h1>
+            <p class="delete-subtitle">Выберите книгу для удаления</p>
+        </div>
+
+        <div class="search-wrapper">
+            <form method="GET" class="search-form">
+                <div class="search-field">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="search" class="search-input" placeholder="Поиск по названию..." value="{{ search or '' }}">
+                </div>
+                <button type="submit" class="search-submit">Найти</button>
+                {% if search %}
+                    <a href="{{ url_for('books.delete_select') }}" class="search-reset">Сбросить</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="books-list">
+            {% for book in books.items %}
+            <div class="book-item">
+                <div class="book-item-cover">
+                    {% if book.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="cover-placeholder">📚</div>
+                    {% endif %}
+                </div>
+                <div class="book-item-info">
+                    <h3 class="book-item-title">{{ book.title }}</h3>
+                    <p class="book-item-author">{{ book.author.full_name }}</p>
+                </div>
+                <div class="book-item-action">
+                    <form method="POST" action="{{ url_for('books.delete', id=book.id) }}" onsubmit="return confirm('Вы уверены, что хотите удалить книгу \'{{ book.title }}\'? Это действие необратимо.');">
+                        <button type="submit" class="delete-book-btn">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <p>Книги не найдены</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if books.pages > 1 %}
+        <div class="pagination">
+            {% if books.has_prev %}
+                <a href="{{ url_for('books.delete_select', page=books.prev_num, search=search) }}" class="page-link">←</a>
+            {% endif %}
+            {% for p in books.iter_pages() %}
+                {% if p %}
+                    <a href="{{ url_for('books.delete_select', page=p, search=search) }}" class="page-link {% if p == books.page %}active{% endif %}">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if books.has_next %}
+                <a href="{{ url_for('books.delete_select', page=books.next_num, search=search) }}" class="page-link">→</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.delete-container {
+    width: 100%;
+    margin: 0;
+    padding: 40px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+
+.delete-card {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.delete-header {
+    margin-bottom: 30px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.back-btn:hover {
+    background: #e0c4a8;
+}
+
+.delete-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+    margin-bottom: 8px;
+}
+
+.delete-subtitle {
+    color: #8b6b5d;
+    font-size: 16px;
+}
+
+.search-wrapper {
+    margin-bottom: 30px;
+}
+
+.search-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #F5F0EB;
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid #e0d4c8;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 15px;
+}
+
+.search-submit {
+    background: #543831;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.search-reset {
+    background: #EFD6C0;
+    color: #543831;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+}
+
+.books-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.book-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+    background: #FDF8F2;
+    border-radius: 16px;
+}
+
+.book-item-cover {
+    width: 60px;
+    height: 80px;
+    background: #e0d4c8;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.book-item-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.book-item-info {
+    flex: 1;
+}
+
+.book-item-title {
+    font-family: 'Prata', serif;
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 4px;
+}
+
+.book-item-author {
+    font-size: 14px;
+    color: #8b6b5d;
+}
+
+.delete-book-btn {
+    background: #EFC0C0;
+    color: #8b3a3a;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.delete-book-btn:hover {
+    background: #e0a8a8;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e0d4c8;
+    border-radius: 10px;
+    color: #543831;
+    text-decoration: none;
+}
+
+.page-link.active, .page-link:hover {
+    background: #543831;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #b8a99a;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+</style>
+{% endblock %}

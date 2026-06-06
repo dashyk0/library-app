@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Аватар -->
+    <div class="avatar-section">
+        <div class="avatar-placeholder">{{ current_user.full_name[0]|upper if current_user.full_name else current_user.username[0]|upper }}</div>
+        <button class="change-avatar-btn" type="button">+</button>
+    </div>
+
+    <!-- Фамилия и дата рождения -->
+    <div class="personal-info">
+        <div class="info-row">
+            <span class="info-label">Фамилия</span>
+            <span class="info-value">{{ current_user.full_name or 'Не указано' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Дата рождения</span>
+            <span class="info-value">{{ current_user.reader.birth_date.strftime('%d.%m.%Y') if current_user.reader and current_user.reader.birth_date else 'Не указана' }}</span>
+        </div>
+    </div>
+
+    <!-- Данные -->
+    <div class="data-section">
+        <div class="section-header">
+            <h2 class="section-title">Данные</h2>
+            <button class="edit-btn" onclick="openEditModal()">Редактировать</button>
+        </div>
+        <div class="data-row">
+            <span class="data-label">E-mail</span>
+            <span class="data-value">{{ current_user.email }}</span>
+        </div>
+        <div class="data-row">
+            <span class="data-label">Пароль</span>
+            <span class="data-value">••••••</span>
+            <button class="password-action" onclick="openPasswordModal()">Сменить</button>
+        </div>
+        <div class="data-row">
+            <span class="data-label">Номер телефона</span>
+            <span class="data-value">{{ current_user.phone or 'Не указан' }}</span>
+        </div>
+    </div>
+
+    <!-- Текущие выдачи -->
+    <div class="loans-section">
+        <h2 class="section-title">Текущие выдачи</h2>
+        <div class="loans-grid">
+            {% if current_user.reader %}
+                {% set active_loans = current_user.reader.loans.filter_by(return_date=None).all() %}
+                {% if active_loans %}
+                    {% for loan in active_loans %}
+                    <div class="loan-card">
+                        <div class="loan-cover">
+                            {% if loan.copy.book.cover_image %}
+                                <img src="{{ url_for('static', filename='uploads/' + loan.copy.book.cover_image) }}" alt="{{ loan.copy.book.title }}">
+                            {% else %}
+                                <div class="cover-placeholder">📚</div>
+                            {% endif %}
+                        </div>
+                        <div class="loan-info">
+                            <h3 class="loan-title">{{ loan.copy.book.title }}</h3>
+                            <p class="loan-author">{{ loan.copy.book.author.full_name }}</p>
+                            <span class="loan-status {% if loan.is_overdue %}status-overdue{% else %}status-active{% endif %}">
+                                Вернуть до {{ loan.due_date.strftime('%d.%m.%Y') }}
+                            </span>
+                            <a href="{{ url_for('books.show', id=loan.copy.book.id) }}" class="loan-details">Подробнее</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-message">Нет активных выдач</p>
+                {% endif %}
+            {% else %}
+                <p class="empty-message">Нет активных выдач</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- История выдачи -->
+    <div class="history-section">
+        <h2 class="section-title">История выдачи</h2>
+        <div class="loans-grid">
+            {% if current_user.reader %}
+                {% set history_loans = current_user.reader.loans.filter(Loan.return_date.isnot(None)).order_by(Loan.return_date.desc()).limit(10).all() %}
+                {% if history_loans %}
+                    {% for loan in history_loans %}
+                    <div class="loan-card">
+                        <div class="loan-cover">
+                            {% if loan.copy.book.cover_image %}
+                                <img src="{{ url_for('static', filename='uploads/' + loan.copy.book.cover_image) }}" alt="{{ loan.copy.book.title }}">
+                            {% else %}
+                                <div class="cover-placeholder">📚</div>
+                            {% endif %}
+                        </div>
+                        <div class="loan-info">
+                            <h3 class="loan-title">{{ loan.copy.book.title }}</h3>
+                            <p class="loan-author">{{ loan.copy.book.author.full_name }}</p>
+                            <span class="loan-status status-returned">
+                                Возвращено {{ loan.return_date.strftime('%d.%m.%Y') if loan.return_date else '—' }}
+                            </span>
+                            <a href="{{ url_for('books.show', id=loan.copy.book.id) }}" class="loan-details">Подробнее</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-message">Нет истории выдач</p>
+                {% endif %}
+            {% else %}
+                <p class="empty-message">Нет истории выдач</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Редактирование профиля</h3>
+            <span class="close" onclick="closeEditModal()">&times;</span>
+        </div>
+        <form method="POST" action="{{ url_for('main.update_profile') }}">
+            <div class="modal-field">
+                <label>E-mail</label>
+                <input type="email" name="email" class="modal-input" value="{{ current_user.email }}" required>
+            </div>
+            <div class="modal-field">
+                <label>Номер телефона</label>
+                <input type="tel" name="phone" class="modal-input" value="{{ current_user.phone or '' }}">
+            </div>
+            <div class="modal-field">
+                <label>Полное имя</label>
+                <input type="text" name="full_name" class="modal-input" value="{{ current_user.full_name or '' }}">
+            </div>
+            {% if current_user.reader %}
+            <div class="modal-field">
+                <label>Дата рождения</label>
+                <input type="date" name="birth_date" class="modal-input" value="{{ current_user.reader.birth_date.strftime('%Y-%m-%d') if current_user.reader.birth_date else '' }}">
+            </div>
+            <div class="modal-field">
+                <label>Адрес</label>
+                <input type="text" name="address" class="modal-input" value="{{ current_user.reader.address or '' }}">
+            </div>
+            {% endif %}
+            <button type="submit" class="modal-save">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+
+<div id="passwordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Смена пароля</h3>
+            <span class="close" onclick="closePasswordModal()">&times;</span>
+        </div>
+        <form method="POST" action="{{ url_for('main.change_password') }}">
+            <div class="modal-field">
+                <label>Текущий пароль</label>
+                <input type="password" name="current_password" class="modal-input" required>
+            </div>
+            <div class="modal-field">
+                <label>Новый пароль</label>
+                <input type="password" name="new_password" class="modal-input" required>
+            </div>
+            <div class="modal-field">
+                <label>Подтвердите пароль</label>
+                <input type="password" name="confirm_password" class="modal-input" required>
+            </div>
+            <button type="submit" class="modal-save">Сменить пароль</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal() {
+    document.getElementById('editModal').style.display = 'flex';
+}
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+function openPasswordModal() {
+    document.getElementById('passwordModal').style.display = 'flex';
+}
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+}
+window.onclick = function(event) {
+    if (event.target == document.getElementById('editModal')) {
+        closeEditModal();
+    }
+    if (event.target == document.getElementById('passwordModal')) {
+        closePasswordModal();
+    }
+}
+</script>
+
+<style>
+.profile-container {
+    max-width: 800px;
+    margin: 0;
+    padding: 40px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+
+.avatar-section {
+    position: relative;
+    width: 200px;
+    margin-bottom: 30px;
+}
+
+.avatar-placeholder {
+    width: 200px;
+    height: 200px;
+    background: white;
+    border-radius: 61px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    font-weight: 500;
+    color: #9a9a9a;
+}
+
+.change-avatar-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: #543831;
+    border-radius: 16px;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.personal-info {
+    margin-bottom: 30px;
+}
+
+.info-row {
+    display: flex;
+    border-bottom: 1px solid #595959;
+    padding: 10px 0;
+}
+
+.info-label {
+    width: 120px;
+    color: #595959;
+    font-size: 16px;
+}
+
+.info-value {
+    flex: 1;
+    color: #000;
+    font-size: 16px;
+}
+
+.data-section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 32px;
+    font-weight: 400;
+    color: #000;
+}
+
+.edit-btn {
+    background: #543831;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.data-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.data-label {
+    width: 150px;
+    font-size: 16px;
+    color: #595959;
+}
+
+.data-value {
+    flex: 1;
+    font-size: 16px;
+    color: #000;
+}
+
+.password-action {
+    background: none;
+    border: none;
+    color: #543831;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+.loans-section, .history-section {
+    margin-bottom: 40px;
+}
+
+.loans-grid {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.loan-card {
+    width: 280px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #DEE2E6;
+    box-shadow: 0px 4px 4px rgba(0,0,0,0.25);
+}
+
+.loan-cover {
+    height: 183px;
+    background: #e0d4c8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.loan-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-placeholder {
+    font-size: 48px;
+}
+
+.loan-info {
+    padding: 16px;
+}
+
+.loan-title {
+    font-family: 'Prata', serif;
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 4px;
+}
+
+.loan-author {
+    font-size: 14px;
+    color: #543831;
+    margin-bottom: 12px;
+}
+
+.loan-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    margin-bottom: 12px;
+}
+
+.status-active {
+    background: #EFD6C0;
+    color: #d4a05a;
+}
+
+.status-overdue {
+    background: #EFC0C0;
+    color: #8b3a3a;
+}
+
+.status-returned {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+
+.loan-details {
+    display: block;
+    text-align: center;
+    background: #EFD6C0;
+    padding: 8px;
+    border-radius: 8px;
+    color: #543731;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.loan-details:hover {
+    background: #e0c4a8;
+}
+
+.empty-message {
+    color: #999;
+    font-size: 16px;
+    padding: 20px 0;
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 24px;
+    width: 450px;
+    max-width: 90%;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f0e8e0;
+}
+
+.modal-header h3 {
+    font-size: 22px;
+    color: #543831;
+    margin: 0;
+}
+
+.close {
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close:hover {
+    color: #543831;
+}
+
+.modal-field {
+    padding: 15px 25px;
+}
+
+.modal-field label {
+    display: block;
+    font-size: 14px;
+    color: #595959;
+    margin-bottom: 5px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.modal-save {
+    margin: 10px 25px 25px;
+    width: calc(100% - 50px);
+    padding: 12px;
+    background: #543831;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+@media (max-width: 700px) {
+    .profile-container {
+        padding: 20px;
+    }
+    .data-label {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    .data-row {
+        flex-wrap: wrap;
+    }
+    .loans-grid {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="issue-page">
+    <div class="issue-container">
+        <div class="issue-card">
+            <h1 class="issue-title">Выдача книги</h1>
+            <div class="issue-divider"></div>
+            
+            <div class="book-preview">
+                <div class="book-cover-mini">
+                    {% if book.cover_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="mini-placeholder">📚</div>
+                    {% endif %}
+                </div>
+                <div class="book-info-mini">
+                    <h3>{{ book.title }}</h3>
+                    <p>{{ book.author.full_name }}</p>
+                    <span class="available-badge">Доступно: {{ book.copies_available }}</span>
+                </div>
+            </div>
+            
+            <form method="POST" class="issue-form">
+                <div class="form-field">
+                    <label class="field-label">Выберите читателя</label>
+                    <select name="reader_id" class="field-select" required>
+                        <option value="">— Выберите читателя —</option>
+                        {% for reader in readers %}
+                            <option value="{{ reader.reader_id }}">
+                                {{ reader.user.full_name or reader.user.username }} (Билет №{{ reader.library_card_number }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-field">
+                    <label class="field-label">Срок выдачи (дней)</label>
+                    <input type="number" name="days" class="field-input" value="14" min="1" max="60">
+                </div>
+                
+                <button type="submit" class="submit-btn">Выдать книгу</button>
+                <a href="{{ url_for('books.show', id=book.id) }}" class="cancel-btn">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.issue-page {
+    background: #EDEBE4;
+    min-height: calc(100vh - 200px);
+    padding: 60px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.issue-container {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.issue-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.issue-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+    margin-bottom: 20px;
+}
+
+.issue-divider {
+    width: 100%;
+    height: 1px;
+    background: #e0d4c8;
+    margin-bottom: 30px;
+}
+
+.book-preview {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #F3F2EC;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.book-cover-mini {
+    width: 80px;
+    height: 100px;
+    background: #d4c8bc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.book-cover-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mini-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.book-info-mini h3 {
+    font-family: 'Prata', serif;
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 4px;
+}
+
+.book-info-mini p {
+    font-size: 14px;
+    color: #8b6b5d;
+    margin-bottom: 8px;
+}
+
+.available-badge {
+    display: inline-block;
+    background: #D4EFC0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #2c5a1a;
+}
+
+.issue-form {
+    margin-top: 20px;
+}
+
+.form-field {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    display: block;
+    font-size: 14px;
+    color: #543831;
+    margin-bottom: 8px;
+}
+
+.field-select, .field-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+    background: white;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #543831;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.cancel-btn {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: #EFD6C0;
+    color: #543731;
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 16px;
+}
+</style>
+{% endblock %}
+EOF
+Шаг 2: Обновляем app/routes/loans.py с выбором читателя
+bash
+cat > app/routes/loans.py << 'EOF'
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_required, current_user
+from datetime import date, timedelta, datetime
+from .. import db
+from ..models import Loan, BookCopy, Reader, Book
+
+loans_bp = Blueprint('loans', __name__, url_prefix='/loans')
+
+@loans_bp.route('/issue/<int:book_id>', methods=['GET', 'POST'])
+@login_required
+def issue_book(book_id):
+    if not current_user.is_librarian():
+        flash('Доступ запрещён. Только библиотекарь может выдавать книги.', 'danger')
+        return redirect(url_for('books.show', id=book_id))
+    
+    book = Book.query.get_or_404(book_id)
+    available_copy = book.copies.filter_by(status='available').first()
+    
+    if not available_copy:
+        flash(f'Нет доступных экземпляров книги "{book.title}"', 'danger')
+        return redirect(url_for('books.show', id=book_id))
+    
+    if request.method == 'POST':
+        reader_id = request.form.get('reader_id')
+        days = int(request.form.get('days', 14))
+        
+        if not reader_id:
+            flash('Выберите читателя', 'danger')
+            return redirect(url_for('loans.issue_book', book_id=book_id))
+        
+        reader = Reader.query.get_or_404(reader_id)
+        
+        loan = Loan(
+            copy_id=available_copy.id,
+            reader_id=reader.reader_id,
+            librarian_id=current_user.id,
+            due_date=date.today() + timedelta(days=days)
+        )
+        
+        available_copy.status = 'issued'
+        db.session.add(loan)
+        db.session.commit()
+        
+        flash(f'Книга "{book.title}" выдана читателю {reader.user.full_name or reader.user.username} на {days} дней', 'success')
+        return redirect(url_for('books.show', id=book_id))
+    
+    readers = Reader.query.all()
+    return render_template('loans/issue_form.html', book=book, readers=readers)
+
+@loans_bp.route('/return/<int:book_id>')
+@login_required
+def return_book(book_id):
+    if not current_user.is_librarian():
+        flash('Доступ запрещён. Только библиотекарь может возвращать книги.', 'danger')
+        return redirect(url_for('books.show', id=book_id))
+    
+    book = Book.query.get_or_404(book_id)
+    
+    active_loan = Loan.query.join(BookCopy).filter(
+        BookCopy.book_id == book_id,
+        Loan.return_date == None
+    ).first()
+    
+    if not active_loan:
+        flash(f'Нет активных выдач для книги "{book.title}"', 'warning')
+        return redirect(url_for('books.show', id=book_id))
+    
+    active_loan.return_date = datetime.now()
+    active_loan.copy.status = 'available'
+    
+    if active_loan.is_overdue:
+        days_overdue = (date.today() - active_loan.due_date).days
+        active_loan.fine_amount = days_overdue * 10
+        flash(f'Книга возвращена с просрочкой {days_overdue} дней. Штраф: {active_loan.fine_amount} руб.', 'warning')
+    else:
+        flash(f'Книга "{book.title}" успешно возвращена', 'success')
+    
+    db.session.commit()
+    return redirect(url_for('books.show', id=book_id))

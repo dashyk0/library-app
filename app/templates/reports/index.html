@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="reports-container">
+    <div class="page-header">
+        <h1 class="page-title">Отчёты и статистика</h1>
+        <p class="page-subtitle">Аналитика работы библиотеки</p>
+        <a href="{{ url_for('admin.dashboard') }}" class="back-btn">← Назад к панели</a>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_books }}</div>
+            <div class="stat-label">Всего книг</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total_loans }}</div>
+            <div class="stat-label">Всего выдач</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.active_loans }}</div>
+            <div class="stat-label">Активных выдач</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.overdue_loans }}</div>
+            <div class="stat-label">Просрочено</div>
+        </div>
+    </div>
+
+    <!-- Секция экспорта данных (для всех библиотекарей) -->
+    <div class="exports-section">
+        <h2 class="section-title">Экспорт данных</h2>
+        <div class="export-buttons">
+            <a href="{{ url_for('reports.export_loans') }}" class="export-btn">
+                <i class="fas fa-download"></i> Выдачи (CSV)
+            </a>
+            <a href="{{ url_for('reports.export_books') }}" class="export-btn">
+                <i class="fas fa-download"></i> Книги (CSV)
+            </a>
+            <a href="{{ url_for('reports.export_popular_books_csv') }}" class="export-btn">
+                <i class="fas fa-download"></i> Популярные книги (CSV)
+            </a>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('reports.export_users') }}" class="export-btn">
+                <i class="fas fa-download"></i> Пользователи (CSV)
+            </a>
+            
+            <a href="{{ url_for('reports.export_librarians_stats') }}" class="export-btn">
+                <i class="fas fa-download"></i> Статистика библиотекарей (CSV)
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Популярные книги (быстрый просмотр для всех) -->
+    <div class="popular-section">
+        <h2 class="section-title">Популярные книги</h2>
+        <div class="section-links">
+            <a href="{{ url_for('reports.popular_books') }}" class="view-all-link">Подробнее →</a>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('reports.popular_books_advanced') }}" class="view-all-link advanced-link">Расширенный отчёт →</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Статистика библиотекарей (только для админа) -->
+    {% if current_user.is_admin() %}
+    <div class="librarians-section">
+        <h2 class="section-title">Статистика библиотекарей</h2>
+        <a href="{{ url_for('reports.librarians_stats') }}" class="view-all-link">Рейтинг →</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Библиотекарь</th>
+                        <th>Выдано книг</th>
+                        <th>Возвращено</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lib in librarian_stats %}
+                    <tr>
+                        <td>{{ lib.name }}</td>
+                        <td>{{ lib.issued }}</td>
+                        <td>{{ lib.returned }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.reports-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.page-header {
+    margin-bottom: 30px;
+}
+.page-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 5px;
+}
+.page-subtitle {
+    color: #8b6b5d;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.back-btn {
+    display: inline-block;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: #543831;
+}
+.stat-label {
+    font-size: 14px;
+    color: #8b6b5d;
+    margin-top: 5px;
+}
+.exports-section, .popular-section, .librarians-section {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.section-title {
+    font-size: 24px;
+    color: #543831;
+    margin-bottom: 20px;
+    border-left: 4px solid #543831;
+    padding-left: 15px;
+}
+.section-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.export-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #543831;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: opacity 0.2s;
+}
+.export-btn:hover {
+    opacity: 0.9;
+}
+.view-all-link {
+    display: inline-block;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+}
+.advanced-link {
+    background: #D4EFC0;
+}
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table th {
+    text-align: left;
+    padding: 12px;
+    background: #F8F1E9;
+    color: #543831;
+}
+.data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0e8e0;
+}
+@media (max-width: 700px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

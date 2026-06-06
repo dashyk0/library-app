@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Панель управления</h1>
+        <p class="dashboard-subtitle">Добро пожаловать, {{ current_user.full_name or current_user.username }}!</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon"><i class="fas fa-book"></i></div>
+            <div class="stat-info">
+                <h3 class="stat-value">{{ total_books }}</h3>
+                <p class="stat-label">Всего книг</p>
+            </div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+                <h3 class="stat-value">{{ available_books }}</h3>
+                <p class="stat-label">Доступно</p>
+            </div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-icon"><i class="fas fa-hand-holding-heart"></i></div>
+            <div class="stat-info">
+                <h3 class="stat-value">{{ issued_books }}</h3>
+                <p class="stat-label">На руках</p>
+            </div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="stat-info">
+                <h3 class="stat-value">{{ overdue_loans }}</h3>
+                <p class="stat-label">Просрочено</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="quick-actions">
+        <h3 class="section-title">Быстрые действия</h3>
+        <div class="actions-grid">
+            <a href="{{ url_for('books.create') }}" class="action-btn">
+                <i class="fas fa-plus-circle"></i> Добавить книгу
+            </a>
+            <a href="{{ url_for('authors.index') }}" class="action-btn">
+                <i class="fas fa-feather-alt"></i> Авторы
+            </a>
+            <a href="{{ url_for('readers.index') }}" class="action-btn">
+                <i class="fas fa-users"></i> Читатели
+            </a>
+            <a href="{{ url_for('loans.select_book') }}" class="action-btn">
+                <i class="fas fa-exchange-alt"></i> Выдать книгу
+            </a>
+            <a href="{{ url_for('loans.select_return_book') }}" class="action-btn">
+                <i class="fas fa-undo-alt"></i> Вернуть книгу
+            </a>
+            <a href="{{ url_for('reports.popular_books') }}" class="action-btn">
+                <i class="fas fa-chart-bar"></i> Популярные книги
+            </a>
+            {% if current_user.is_librarian() %}
+            <a href="{{ url_for('books.delete_select') }}" class="action-btn">
+                <i class="fas fa-trash-alt"></i> Удалить книгу
+            </a>
+            {% endif %}
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('admin.users') }}" class="action-btn">
+                <i class="fas fa-user-cog"></i> Пользователи
+            </a>
+            <a href="{{ url_for('reports.popular_books_advanced') }}" class="action-btn">
+                <i class="fas fa-chart-line"></i> Расширенный отчёт
+            </a>
+            <a href="{{ url_for('reports.librarians_stats') }}" class="action-btn">
+                <i class="fas fa-chart-simple"></i> Рейтинг библиотекарей
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Последние выдачи -->
+    <div class="recent-loans">
+        <div class="section-header">
+            <h3 class="section-title">Последние выдачи</h3>
+            <a href="{{ url_for('loans.index') }}" class="view-all-btn">Все выдачи →</a>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="col-book">Книга</th>
+                        <th class="col-reader">Читатель</th>
+                        <th class="col-date">Дата выдачи</th>
+                        <th class="col-date">Срок возврата</th>
+                        <th class="col-status">Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in recent_loans %}
+                    <tr class="{% if loan.is_overdue and not loan.return_date %}overdue-row{% endif %}">
+                        <td class="col-book">
+                            <strong>{{ loan.copy.book.title[:35] if loan.copy.book.title|length > 35 else loan.copy.book.title }}</strong>
+                            <div class="book-author-small">{{ loan.copy.book.author.full_name[:30] if loan.copy.book.author.full_name|length > 30 else loan.copy.book.author.full_name }}</div>
+                        </td>
+                        <td class="col-reader">
+                            {% set reader_name = loan.reader.user.full_name or loan.reader.user.username %}
+                            {{ reader_name[:25] if reader_name|length > 25 else reader_name }}
+                        </td>
+                        <td class="col-date">{{ loan.issue_date.strftime('%d.%m.%Y') }}</td>
+                        <td class="col-date">{{ loan.due_date.strftime('%d.%m.%Y') }}</td>
+                        <td class="col-status">
+                            {% if loan.return_date %}
+                                <span class="status-badge returned">Возвращена</span>
+                            {% elif loan.is_overdue %}
+                                <span class="status-badge overdue">Просрочена</span>
+                            {% else %}
+                                <span class="status-badge active">Активна</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Нет данных о выдачах</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.dashboard-header {
+    margin-bottom: 30px;
+}
+.dashboard-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 5px;
+}
+.dashboard-subtitle {
+    color: #8b6b5d;
+    font-size: 16px;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+}
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+.stat-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+.stat-card.primary .stat-icon {
+    background: #54383120;
+    color: #543831;
+}
+.stat-card.success .stat-icon {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+.stat-card.warning .stat-icon {
+    background: #EFD6C0;
+    color: #d4a05a;
+}
+.stat-card.danger .stat-icon {
+    background: #EFC0C0;
+    color: #8b3a3a;
+}
+.stat-info {
+    flex: 1;
+}
+.stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: #2c1810;
+    margin: 0;
+    line-height: 1.2;
+}
+.stat-label {
+    color: #8b6b5d;
+    font-size: 14px;
+    margin: 0;
+}
+.section-title {
+    font-size: 24px;
+    font-weight: 500;
+    color: #543831;
+    margin-bottom: 20px;
+    border-left: 4px solid #543831;
+    padding-left: 15px;
+}
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.view-all-btn {
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 20px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+.view-all-btn:hover {
+    background: #e0c4a8;
+}
+.quick-actions {
+    margin-bottom: 40px;
+}
+.actions-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 12px 22px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border: 1px solid #e0d4c8;
+}
+.action-btn:hover {
+    background: #543831;
+    color: white;
+    transform: translateY(-2px);
+}
+.recent-loans {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.table-wrapper {
+    overflow-x: auto;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+.data-table th {
+    text-align: left;
+    padding: 14px 12px;
+    background: #F8F1E9;
+    color: #543831;
+    font-weight: 500;
+    font-size: 14px;
+}
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0e8e0;
+    font-size: 14px;
+}
+.col-book {
+    width: 30%;
+}
+.col-reader {
+    width: 20%;
+}
+.col-date {
+    width: 12%;
+}
+.col-status {
+    width: 15%;
+}
+.book-author-small {
+    font-size: 12px;
+    color: #8b6b5d;
+    margin-top: 3px;
+}
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.status-badge.active {
+    background: #EFD6C0;
+    color: #d4a05a;
+}
+.status-badge.overdue {
+    background: #EFC0C0;
+    color: #8b3a3a;
+}
+.status-badge.returned {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+.text-center {
+    text-align: center;
+}
+.overdue-row {
+    background: #FFF5F0;
+}
+@media (max-width: 900px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .dashboard-container {
+        padding: 20px;
+    }
+    .action-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

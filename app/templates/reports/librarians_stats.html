@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="librarians-stats-container">
+    <div class="page-header">
+        <h1 class="page-title">Статистика библиотекарей</h1>
+        <p class="page-subtitle">Рейтинг эффективности работы сотрудников</p>
+        <div class="header-actions">
+            <a href="{{ url_for('reports.index') }}" class="back-btn">← Назад к отчётам</a>
+            <a href="{{ url_for('reports.export_librarians_stats') }}" class="export-btn">Экспорт CSV</a>
+        </div>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon"></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_librarians }}</div>
+                <div class="stat-label">Всего библиотекарей</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_issued }}</div>
+                <div class="stat-label">Всего выдано</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_returned }}</div>
+                <div class="stat-label">Всего возвращено</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ avg_issued|round(1) }}</div>
+                <div class="stat-label">Среднее на библиотекаря</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Рейтинг библиотекарей -->
+    <div class="report-section">
+        <h2 class="section-title">Рейтинг библиотекарей</h2>
+        <div class="table-wrapper">
+            <table class="rank-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Библиотекарь</th>
+                        <th>Выдано книг</th>
+                        <th>Возвращено</th>
+                        <th>Эффективность</th>
+                        <th>Просрочек</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lib in librarians_stats %}
+                    <tr class="{% if loop.index <= 3 %}top-row{% endif %}">
+                        <td class="rank-cell">
+                            {% if loop.index == 1 %}🥇
+                            {% elif loop.index == 2 %}🥈
+                            {% elif loop.index == 3 %}🥉
+                            {% else %}{{ loop.index }}{% endif %}
+                        </td>
+                        <td class="librarian-name">{{ lib.name }}</td>
+                        <td class="issued-cell">{{ lib.issued }}</td>
+                        <td class="returned-cell">{{ lib.returned }}</td>
+                        <td>
+                            <div class="efficiency-bar">
+                                <div class="efficiency-fill" style="width: {{ lib.efficiency }}%;"></div>
+                                <span class="efficiency-value">{{ lib.efficiency }}%</span>
+                            </div>
+                        </td>
+                        <td class="overdue-cell">{{ lib.overdue }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Детальная таблица по каждому библиотекарю -->
+    <div class="report-section">
+        <h2 class="section-title">Детальная статистика</h2>
+        <div class="table-wrapper">
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>Библиотекарь</th>
+                        <th>Всего выдач</th>
+                        <th>Возвращено вовремя</th>
+                        <th>С просрочкой</th>
+                        <th>Средний срок</th>
+                        <th>Общий штраф</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lib in librarians_stats %}
+                    <tr>
+                        <td class="librarian-name">{{ lib.name }}</td>
+                        <td>{{ lib.issued }}</td>
+                        <td class="success-cell">{{ lib.on_time }}</td>
+                        <td class="warning-cell">{{ lib.overdue }}</td>
+                        <td>{{ lib.avg_days }} дн.</td>
+                        <td>{{ lib.total_fine }} ₽</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.librarians-stats-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.page-header {
+    margin-bottom: 30px;
+}
+.page-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 5px;
+}
+.page-subtitle {
+    color: #8b6b5d;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+.back-btn, .export-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 14px;
+}
+.back-btn {
+    background: #EFD6C0;
+    color: #543831;
+}
+.export-btn {
+    background: #543831;
+    color: white;
+}
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.stat-icon {
+    font-size: 40px;
+}
+.stat-info {
+    flex: 1;
+}
+.stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: #543831;
+}
+.stat-label {
+    font-size: 14px;
+    color: #8b6b5d;
+}
+.report-section {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.section-title {
+    font-size: 24px;
+    color: #543831;
+    margin-bottom: 20px;
+    border-left: 4px solid #543831;
+    padding-left: 15px;
+}
+.table-wrapper {
+    overflow-x: auto;
+}
+.rank-table, .detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.rank-table th, .detail-table th {
+    text-align: left;
+    padding: 12px;
+    background: #F8F1E9;
+    color: #543831;
+    font-weight: 500;
+}
+.rank-table td, .detail-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0e8e0;
+}
+.rank-cell {
+    font-size: 20px;
+    text-align: center;
+    width: 60px;
+}
+.top-row {
+    background: #FFF8F0;
+}
+.librarian-name {
+    font-weight: 500;
+    color: #543831;
+}
+.issued-cell, .returned-cell {
+    font-weight: bold;
+    text-align: center;
+}
+.issued-cell {
+    color: #d4a05a;
+}
+.returned-cell {
+    color: #2c5a1a;
+}
+.overdue-cell {
+    color: #8b3a3a;
+    font-weight: 500;
+    text-align: center;
+}
+.success-cell {
+    color: #2c5a1a;
+    font-weight: 500;
+}
+.warning-cell {
+    color: #8b3a3a;
+    font-weight: 500;
+}
+.efficiency-bar {
+    position: relative;
+    width: 120px;
+    height: 24px;
+    background: #f0e8e0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.efficiency-fill {
+    height: 100%;
+    background: #D4EFC0;
+    border-radius: 12px;
+}
+.efficiency-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: bold;
+    color: #2c5a1a;
+}
+@media (max-width: 900px) {
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">📖 Выдача книги</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="copy_id" class="form-label">Книга (экземпляр)</label>
+                        <select class="form-select" id="copy_id" name="copy_id" required>
+                            <option value="">Выберите книгу</option>
+                            {% for copy in available_copies %}
+                                <option value="{{ copy.id }}">
+                                    {{ copy.book.title }} - {{ copy.book.author.full_name }} (Инв. №: {{ copy.inventory_number }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if not available_copies %}
+                            <div class="alert alert-warning mt-2">Нет доступных экземпляров книг</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reader_id" class="form-label">Читатель</label>
+                        <select class="form-select" id="reader_id" name="reader_id" required>
+                            <option value="">Выберите читателя</option>
+                            {% for reader in readers %}
+                                <option value="{{ reader.reader_id }}">
+                                    {{ reader.user.full_name or reader.user.username }} (Билет №{{ reader.library_card_number }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="days" class="form-label">Срок выдачи (дней)</label>
+                        <input type="number" class="form-control" id="days" name="days" value="14" min="1" max="60">
+                        <small class="text-muted">По умолчанию 14 дней</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" {% if not available_copies %}disabled{% endif %}>Выдать книгу</button>
+                    <a href="{{ url_for('loans.index') }}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

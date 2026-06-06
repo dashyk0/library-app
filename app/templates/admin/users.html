@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="users-container">
+    <div class="users-header">
+        <h1 class="users-title">Управление пользователями</h1>
+        <p class="users-subtitle">Просмотр и изменение ролей пользователей</p>
+        <a href="{{ url_for('admin.dashboard') }}" class="back-btn">← Назад к панели</a>
+    </div>
+
+    <div class="search-wrapper">
+        <form method="GET" class="search-form">
+            <input type="text" name="search" class="search-input" placeholder="Поиск по логину или email..." value="{{ search or '' }}">
+            <button type="submit" class="search-btn">Найти</button>
+            {% if search %}
+                <a href="{{ url_for('admin.users') }}" class="reset-btn">Сбросить</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="users-table-wrapper">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Логин</th>
+                    <th>Email</th>
+                    <th>Полное имя</th>
+                    <th>Текущая роль</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users.items %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.full_name or '—' }}</td>
+                    <td>
+                        <span class="role-badge role-{{ user.role }}">
+                            {% if user.role == 'admin' %}Администратор
+                            {% elif user.role == 'librarian' %}Библиотекарь
+                            {% else %}Читатель{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if user.id != current_user.id %}
+                        <form method="POST" action="{{ url_for('admin.change_role', user_id=user.id) }}" class="role-form">
+                            <select name="role" class="role-select">
+                                <option value="reader" {% if user.role == 'reader' %}selected{% endif %}>Читатель</option>
+                                <option value="librarian" {% if user.role == 'librarian' %}selected{% endif %}>Библиотекарь</option>
+                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Администратор</option>
+                            </select>
+                            <button type="submit" class="change-role-btn">Изменить</button>
+                        </form>
+                        {% else %}
+                        <span class="self-note">Вы</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if users.pages > 1 %}
+    <div class="pagination">
+        {% if users.has_prev %}
+            <a href="{{ url_for('admin.users', page=users.prev_num, search=search) }}" class="page-link">←</a>
+        {% endif %}
+        {% for p in users.iter_pages() %}
+            {% if p %}
+                <a href="{{ url_for('admin.users', page=p, search=search) }}" class="page-link {% if p == users.page %}active{% endif %}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if users.has_next %}
+            <a href="{{ url_for('admin.users', page=users.next_num, search=search) }}" class="page-link">→</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.users-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.users-header {
+    margin-bottom: 30px;
+}
+.users-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 5px;
+}
+.users-subtitle {
+    color: #8b6b5d;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+.back-btn {
+    display: inline-block;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+}
+.search-wrapper {
+    margin-bottom: 25px;
+}
+.search-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.search-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+    background: white;
+}
+.search-btn, .reset-btn {
+    background: #543831;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.reset-btn {
+    background: #EFD6C0;
+    color: #543831;
+    text-decoration: none;
+}
+.users-table-wrapper {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.users-table th {
+    text-align: left;
+    padding: 15px;
+    background: #F8F1E9;
+    color: #543831;
+    font-weight: 500;
+}
+.users-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0e8e0;
+}
+.role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+.role-admin {
+    background: #543831;
+    color: white;
+}
+.role-librarian {
+    background: #EFD6C0;
+    color: #543831;
+}
+.role-reader {
+    background: #D4EFC0;
+    color: #2c5a1a;
+}
+.role-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.role-select {
+    padding: 6px 10px;
+    border: 1px solid #e0d4c8;
+    border-radius: 8px;
+    background: white;
+}
+.change-role-btn {
+    background: #543831;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.self-note {
+    color: #999;
+    font-style: italic;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e0d4c8;
+    border-radius: 10px;
+    color: #543831;
+    text-decoration: none;
+}
+.page-link.active, .page-link:hover {
+    background: #543831;
+    color: white;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="author-form-container">
+    <div class="author-form-card">
+        <h1 class="form-title">Редактировать автора</h1>
+        <div class="form-divider"></div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Полное имя автора *</label>
+                <input type="text" name="full_name" class="form-input" value="{{ author.full_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Год рождения</label>
+                <input type="number" name="birth_year" class="form-input" value="{{ author.birth_year or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Биография</label>
+                <textarea name="biography" class="form-textarea" rows="5">{{ author.biography or '' }}</textarea>
+            </div>
+
+            <div class="alert alert-warning">
+                <strong>Внимание!</strong> Если у автора есть книги в библиотеке, удалить его будет невозможно.
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Сохранить изменения</button>
+                <a href="{{ url_for('authors.index') }}" class="cancel-btn">Отмена</a>
+            </div>
+        </form>
+
+        {% if author.books.count() == 0 %}
+        <div class="delete-section">
+            <form method="POST" action="{{ url_for('authors.delete', id=author.id) }}" onsubmit="return confirm('Вы уверены, что хотите удалить автора?');">
+                <button type="submit" class="delete-btn">🗑️ Удалить автора</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.author-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.author-form-card {
+    background: white;
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.form-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+    margin-bottom: 20px;
+}
+.form-divider {
+    width: 100%;
+    height: 1px;
+    background: #e0d4c8;
+    margin-bottom: 30px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-label {
+    display: block;
+    font-size: 14px;
+    color: #543831;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+    background: white;
+    font-family: inherit;
+}
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #543831;
+}
+.form-textarea {
+    resize: vertical;
+}
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+.save-btn {
+    flex: 1;
+    padding: 12px;
+    background: #543831;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.save-btn:hover {
+    opacity: 0.9;
+}
+.cancel-btn {
+    flex: 1;
+    display: inline-block;
+    padding: 12px;
+    background: #EFD6C0;
+    color: #543731;
+    text-decoration: none;
+    border-radius: 12px;
+    text-align: center;
+}
+.cancel-btn:hover {
+    background: #e0c4a8;
+}
+.delete-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f0e8e0;
+    text-align: center;
+}
+.delete-btn {
+    background: #EFC0C0;
+    color: #8b3a3a;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.delete-btn:hover {
+    background: #e0a8a8;
+}
+.alert {
+    background: #FFF3CD;
+    border: 1px solid #FFEeba;
+    color: #856404;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+</style>
+{% endblock %}

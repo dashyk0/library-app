@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="edit-reader-container">
+    <div class="edit-reader-card">
+        <h1 class="edit-title">Редактирование читателя</h1>
+        <div class="edit-divider"></div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Полное имя</label>
+                <input type="text" name="full_name" class="form-input" value="{{ user.full_name or '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Телефон</label>
+                <input type="tel" name="phone" class="form-input" value="{{ user.phone or '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Дата рождения</label>
+                <input type="date" name="birth_date" class="form-input" value="{{ reader.birth_date.strftime('%Y-%m-%d') if reader.birth_date else '' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Адрес</label>
+                <textarea name="address" class="form-textarea" rows="3">{{ reader.address or '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Категория читателя</label>
+                <select name="reader_category" class="form-select">
+                    <option value="">— Выберите —</option>
+                    <option value="Школьник" {% if reader.reader_category == 'Школьник' %}selected{% endif %}>Школьник</option>
+                    <option value="Студент" {% if reader.reader_category == 'Студент' %}selected{% endif %}>Студент</option>
+                    <option value="Преподаватель" {% if reader.reader_category == 'Преподаватель' %}selected{% endif %}>Преподаватель</option>
+                    <option value="Взрослый" {% if reader.reader_category == 'Взрослый' %}selected{% endif %}>Взрослый</option>
+                    <option value="Пенсионер" {% if reader.reader_category == 'Пенсионер' %}selected{% endif %}>Пенсионер</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Сохранить изменения</button>
+                <a href="{{ url_for('readers.show', id=reader.reader_id) }}" class="cancel-btn">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.edit-reader-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.edit-reader-card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.edit-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+    margin-bottom: 20px;
+}
+.edit-divider {
+    width: 100%;
+    height: 1px;
+    background: #e0d4c8;
+    margin-bottom: 30px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-label {
+    display: block;
+    font-size: 14px;
+    color: #543831;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+    background: white;
+}
+.form-textarea {
+    resize: vertical;
+}
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+.save-btn {
+    flex: 1;
+    padding: 12px;
+    background: #543831;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.cancel-btn {
+    flex: 1;
+    display: inline-block;
+    padding: 12px;
+    background: #EFD6C0;
+    color: #543731;
+    text-decoration: none;
+    border-radius: 12px;
+    text-align: center;
+}
+</style>
+{% endblock %}

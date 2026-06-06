@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="return-container">
+    <div class="return-card">
+        <div class="return-header">
+            <a href="{{ url_for('loans.select_return_book') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+            <h1 class="return-title">Возврат книги</h1>
+        </div>
+
+        <div class="book-preview">
+            <div class="book-cover-mini">
+                {% if book.cover_image %}
+                    <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}" alt="{{ book.title }}">
+                {% else %}
+                    <div class="mini-placeholder">📚</div>
+                {% endif %}
+            </div>
+            <div class="book-info-mini">
+                <h3>{{ book.title }}</h3>
+                <p>{{ book.author.full_name }}</p>
+            </div>
+        </div>
+
+        <form method="POST" class="return-form">
+            <div class="form-field">
+                <label class="field-label">Выберите читателя, который возвращает книгу</label>
+                <select name="reader_id" class="field-select" required>
+                    <option value="">— Выберите читателя —</option>
+                    {% for reader in readers %}
+                        <option value="{{ reader.reader_id }}">
+                            {{ reader.user.full_name or reader.user.username }} (Билет №{{ reader.library_card_number }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn">Подтвердить возврат</button>
+        </form>
+    </div>
+</div>
+
+<style>
+.return-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+
+.return-card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.return-header {
+    margin-bottom: 30px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #EFD6C0;
+    padding: 8px 20px;
+    border-radius: 30px;
+    color: #543831;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.return-title {
+    font-family: 'Prata', serif;
+    font-size: 28px;
+    color: #543831;
+}
+
+.book-preview {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #FDF8F2;
+    border-radius: 16px;
+    margin-bottom: 30px;
+}
+
+.book-cover-mini {
+    width: 80px;
+    height: 100px;
+    background: #e0d4c8;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.book-cover-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mini-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.book-info-mini h3 {
+    font-family: 'Prata', serif;
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 4px;
+}
+
+.book-info-mini p {
+    font-size: 14px;
+    color: #8b6b5d;
+}
+
+.return-form {
+    margin-top: 20px;
+}
+
+.form-field {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    display: block;
+    font-size: 14px;
+    color: #543831;
+    margin-bottom: 8px;
+}
+
+.field-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+    font-size: 14px;
+    background: white;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #543831;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    opacity: 0.9;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="static-page">
+    <div class="static-container">
+        <h1 class="static-title">О нас</h1>
+        <div class="static-divider"></div>
+        
+        <div class="static-content">
+            <p><strong>KeeperBook</strong> — современная библиотечная система, созданная для автоматизации работы библиотек.</p>
+            
+            <h2>Миссия</h2>
+            <p>Сделать управление библиотекой простым, удобным и доступным для каждого. Мы стремимся к тому, чтобы читатели могли легко находить нужные книги, а библиотекари — эффективно управлять фондом.</p>
+            
+            <h2>Функционал</h2>
+            <ul>
+                <li>Электронный каталог книг</li>
+                <li>Управление читателями</li>
+                <li>Учёт выдачи и возврата книг</li>
+                <li>Детальная статистика и отчёты</li>
+                <li>Загрузка обложек книг</li>
+                <li>Импорт и экспорт данных</li>
+            </ul>
+            
+            <h2>Для кого этот сервис</h2>
+            <p>KeeperBook идеально подходит для школьных, университетских, муниципальных и домашних библиотек. Система проста в использовании и не требует специальных технических знаний.</p>
+            
+            </div>
+    </div>
+</div>
+
+<style>
+.static-page {
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+    padding: 60px 40px;
+}
+.static-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.static-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 20px;
+}
+.static-divider {
+    width: 80px;
+    height: 3px;
+    background: #543831;
+    margin-bottom: 30px;
+}
+.static-content {
+    color: #2c1810;
+    line-height: 1.6;
+}
+.static-content h2 {
+    font-size: 24px;
+    color: #543831;
+    margin: 25px 0 15px;
+}
+.static-content p {
+    margin-bottom: 15px;
+}
+.static-content ul {
+    margin: 15px 0 15px 25px;
+}
+.static-content li {
+    margin-bottom: 8px;
+}
+</style>
+{% endblock %}

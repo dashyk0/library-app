@@ -1,0 +1,47 @@
+# Виртуальное окружение
+venv/
+env/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+.Python
+
+# База данных
+*.db
+*.sqlite
+*.sqlite3
+
+# Загруженные файлы
+app/static/uploads/*.jpg
+app/static/uploads/*.png
+app/static/uploads/*.gif
+app/static/uploads/*.jpeg
+!app/static/uploads/.gitkeep
+
+# Логи
+*.log
+
+# Миграции (опционально, можно оставить)
+# migrations/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Файлы конфигурации с секретами
+.env
+config.pyc
+
+# Файлы отчётов
+*.csv
+*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+EOF

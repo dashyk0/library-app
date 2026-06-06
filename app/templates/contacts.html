@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="static-page">
+    <div class="static-container">
+        <h1 class="static-title">Контакты</h1>
+        <div class="static-divider"></div>
+        
+        <div class="static-content">
+            <h2>Свяжитесь с нами</h2>
+            <p>Мы всегда рады помочь! Вы можете связаться с нами любым удобным способом.</p>
+            
+            <div class="contacts-grid">
+                <div class="contact-card">
+                    <div class="contact-icon">📧</div>
+                    <h3>Email</h3>
+                    <p>info@keeperbook.ru</p>
+                    <p>support@keeperbook.ru</p>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">📞</div>
+                    <h3>Телефон</h3>
+                    <p>+7 (999) 123-45-67</p>
+                    <p>Пн-Пт: 9:00 - 18:00</p>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">📍</div>
+                    <h3>Адрес</h3>
+                    <p>г. Москва, ул. Примерная, д. 123</p>
+                    <p>Московский Политех</p>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">🌐</div>
+                    <h3>Социальные сети</h3>
+                    <p>Telegram: @keeperbook</p>
+                    <p>VK: vk.com/keeperbook</p>
+                </div>
+            </div>
+            
+            <h2>Реквизиты</h2>
+            <div class="requisites">
+                <p><strong>ООО "KeeperBook"</strong></p>
+                <p>ИНН: 1234567890</p>
+                <p>КПП: 123456789</p>
+                <p>ОГРН: 1234567890123</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.static-page {
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+    padding: 60px 40px;
+}
+.static-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.static-title {
+    font-family: 'Prata', serif;
+    font-size: 36px;
+    color: #543831;
+    margin-bottom: 20px;
+}
+.static-divider {
+    width: 80px;
+    height: 3px;
+    background: #543831;
+    margin-bottom: 30px;
+}
+.static-content h2 {
+    font-size: 24px;
+    color: #543831;
+    margin: 25px 0 15px;
+}
+.contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin: 20px 0;
+}
+.contact-card {
+    background: #FDF8F2;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+.contact-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+.contact-card h3 {
+    font-size: 18px;
+    color: #543831;
+    margin-bottom: 10px;
+}
+.contact-card p {
+    color: #8b6b5d;
+    margin: 5px 0;
+}
+.requisites {
+    background: #FDF8F2;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+}
+.requisites p {
+    margin: 8px 0;
+}
+@media (max-width: 600px) {
+    .contacts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

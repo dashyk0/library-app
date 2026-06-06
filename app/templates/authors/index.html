@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="authors-container">
+    <div class="authors-header">
+        <h1 class="authors-title">Управление авторами</h1>
+        <div class="header-actions">
+            <a href="{{ url_for('authors.create') }}" class="btn-primary">Добавить автора</a>
+            <a href="{{ url_for('admin.dashboard') }}" class="back-btn">← Назад</a>
+        </div>
+    </div>
+
+    <div class="search-wrapper">
+        <form method="GET" class="search-form">
+            <input type="text" name="search" class="search-input" placeholder="Поиск по имени автора..." value="{{ search or '' }}">
+            <button type="submit" class="search-btn">Найти</button>
+            {% if search %}
+                <a href="{{ url_for('authors.index') }}" class="reset-btn">Сбросить</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="authors-table-wrapper">
+        <table class="authors-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя автора</th>
+                    <th>Год рождения</th>
+                    <th>Книг в библиотеке</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for author in authors.items %}
+                <tr>
+                    <td>{{ author.id }}</td>
+                    <td>{{ author.full_name }}</td>
+                    <td>{{ author.birth_year or '—' }}</td>
+                    <td>{{ author.books.count() }}</td>
+                    <td>
+                        <a href="{{ url_for('authors.edit', id=author.id) }}" class="btn-edit"></a>
+                        <form method="POST" action="{{ url_for('authors.delete', id=author.id) }}" style="display: inline;" onsubmit="return confirm('Удалить автора?');">
+                            <button type="submit" class="btn-delete"></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if authors.pages > 1 %}
+    <div class="pagination">
+        {% if authors.has_prev %}
+            <a href="{{ url_for('authors.index', page=authors.prev_num, search=search) }}" class="page-link">←</a>
+        {% endif %}
+        {% for p in authors.iter_pages() %}
+            {% if p %}
+                <a href="{{ url_for('authors.index', page=p, search=search) }}" class="page-link {% if p == authors.page %}active{% endif %}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if authors.has_next %}
+            <a href="{{ url_for('authors.index', page=authors.next_num, search=search) }}" class="page-link">→</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.authors-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #F3F2EC;
+    min-height: calc(100vh - 200px);
+}
+.authors-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+.authors-title {
+    font-family: 'Prata', serif;
+    font-size: 32px;
+    color: #543831;
+}
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+.btn-primary {
+    background: #543831;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+}
+.back-btn {
+    background: #EFD6C0;
+    color: #543831;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+}
+.search-wrapper {
+    margin-bottom: 25px;
+}
+.search-form {
+    display: flex;
+    gap: 10px;
+}
+.search-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #e0d4c8;
+    border-radius: 12px;
+}
+.search-btn, .reset-btn {
+    background: #543831;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.reset-btn {
+    background: #EFD6C0;
+    color: #543831;
+    text-decoration: none;
+}
+.authors-table-wrapper {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.authors-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.authors-table th {
+    text-align: left;
+    padding: 15px;
+    background: #F8F1E9;
+    color: #543831;
+}
+.authors-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0e8e0;
+}
+.btn-edit, .btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 0 5px;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+.page-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #e0d4c8;
+    border-radius: 10px;
+    color: #543831;
+    text-decoration: none;
+}
+.page-link.active, .page-link:hover {
+    background: #543831;
+    color: white;
+}
+</style>
+{% endblock %}
