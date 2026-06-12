@@ -6,6 +6,7 @@ from ..models import Loan, BookCopy, Reader, Book
 
 loans_bp = Blueprint('loans', __name__, url_prefix='/loans')
 
+#список всех выдач
 @loans_bp.route('/')
 @login_required
 def index():
@@ -24,6 +25,7 @@ def index():
     
     return render_template('loans/index.html', loans=loans, status=status)
 
+#выбор книги для выдачи
 @loans_bp.route('/select-book')
 @login_required
 def select_book():
@@ -44,6 +46,7 @@ def select_book():
     books = query.order_by(Book.title).paginate(page=page, per_page=10)
     return render_template('loans/select_book.html', books=books, search=search)
 
+#выдача книги
 @loans_bp.route('/issue/<int:book_id>', methods=['GET', 'POST'])
 @login_required
 def issue_book(book_id):
@@ -85,6 +88,7 @@ def issue_book(book_id):
     readers = Reader.query.all()
     return render_template('loans/issue_form.html', book=book, readers=readers)
 
+#выбор книги для возврата
 @loans_bp.route('/select-return-book')
 @login_required
 def select_return_book():
@@ -107,6 +111,7 @@ def select_return_book():
     books = query.order_by(Book.title).paginate(page=page, per_page=10)
     return render_template('loans/select_return_book.html', books=books, search=search)
 
+#возврат книги
 @loans_bp.route('/return/<int:book_id>/select-reader', methods=['GET', 'POST'])
 @login_required
 def select_reader_for_return(book_id):

@@ -20,6 +20,7 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    avatar = db.Column(db.String(255), nullable=True)  # хранит путь к файлу аватара
     
     reader = db.relationship('Reader', backref='user', uselist=False, cascade='all, delete-orphan')
     issued_loans = db.relationship('Loan', foreign_keys='Loan.librarian_id', backref='librarian', lazy='dynamic')
@@ -37,7 +38,8 @@ class User(UserMixin, db.Model):
     
     def is_admin(self):
         return self.role == 'admin'
-    
+
+    #Строковое представление объекта для отладки
     def __repr__(self):
         return f'<User {self.username}>'
 
@@ -92,7 +94,7 @@ class Book(db.Model):
     
     copies = db.relationship('BookCopy', backref='book', lazy='dynamic', cascade='all, delete-orphan')
     
-    @property
+    @property # делает метод доступным как атрибут
     def copies_available(self):
         return self.copies.filter_by(status='available').count()
     
@@ -126,7 +128,7 @@ class Loan(db.Model):
     return_date = db.Column(db.DateTime)
     fine_amount = db.Column(db.Numeric(10, 2), default=0)
     
-    @property
+    @property 
     def is_overdue(self):
         if self.return_date:
             return False

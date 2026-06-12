@@ -1,20 +1,23 @@
+# создаёт и настраивает Flask-приложение, регистрирует все компоненты и возвращает готовый объект app
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager #Управление сессиями пользователей
 from flask_migrate import Migrate
 from .config import Config
 
 db = SQLAlchemy()
-login_manager = LoginManager()
-login_manager.login_view = 'auth.login'
-login_manager.login_message_category = 'info'
+login_manager = LoginManager() #Экземпляр менеджера авторизации
+login_manager.login_view = 'auth.login' #URL для редиректа неавторизованного пользователя
+login_manager.login_message_category = 'info'#CSS-класс для flash-сообщения
 migrate = Migrate()
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
+    #Фабрика приложения 
+    app = Flask(__name__) #__name__ помогает Flask найти папки templates и static
+    app.config.from_object(Config) # подключаем настройки
 
-    db.init_app(app)
+    #привязывает созданные ранее объекты к конкретному приложению
+    db.init_app(app) 
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
@@ -42,7 +45,7 @@ def create_app():
 
     return app
 
-@login_manager.user_loader
+@login_manager.user_loader #Декоратор, регистрирует функцию для загрузки пользователя
 def load_user(user_id):
     from .models import User
     return User.query.get(int(user_id))

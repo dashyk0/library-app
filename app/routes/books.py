@@ -23,6 +23,7 @@ def save_cover_image(file):
         return unique_filename
     return None
 
+#каталог книг
 @books_bp.route('/')
 @login_required
 def index():
@@ -51,6 +52,7 @@ def index():
     
     return render_template('books/index.html', books=books, search=search, popular_books=popular_books_list)
 
+# просмотр одной книги 
 @books_bp.route('/<int:id>')
 @login_required
 def show(id):
@@ -58,6 +60,7 @@ def show(id):
     available_copies = book.copies.filter_by(status='available').count()
     return render_template('books/show.html', book=book, available_copies=available_copies)
 
+# выбор книги для удаления
 @books_bp.route('/delete-select')
 @login_required
 def delete_select():

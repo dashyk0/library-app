@@ -5,6 +5,7 @@ from ..models import Author
 
 authors_bp = Blueprint('authors', __name__, url_prefix='/authors')
 
+# список авторов
 @authors_bp.route('/')
 @login_required
 def index():

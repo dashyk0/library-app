@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from .. import db
 from ..models import User, Reader
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__) #Создание модуля маршрутов
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -16,10 +16,10 @@ def login():
         user = User.query.filter_by(username=username).first()
         
         if user and user.check_password(password):
-            login_user(user)
+            login_user(user)  #создаёm сессию для пользователя
             from datetime import datetime
-            user.last_login = datetime.utcnow()
-            db.session.commit()
+            user.last_login = datetime.utcnow() #обновляем поле последнего входа
+            db.session.commit() #сохраняем изменения в БД
             flash('Вы успешно вошли в систему!', 'success')
             next_page = request.args.get('next')
             return redirect(next_page if next_page else url_for('books.index'))

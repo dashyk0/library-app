@@ -25,7 +25,7 @@ app/static/uploads/*.jpeg
 # Логи
 *.log
 
-# Миграции (опционально, можно оставить)
+# Миграции
 # migrations/
 
 # IDE

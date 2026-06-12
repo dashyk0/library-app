@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func #SQL-функции 
 from .. import db
 from ..models import User, Reader, Loan, Book, BookCopy
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-@admin_bp.route('/')
-@login_required
+@admin_bp.route('/') #Привязка URL /admin/ к функции dashboard()
+@login_required#Только авторизованные пользователи
 def dashboard():
     if not current_user.is_librarian():
         abort(403)
@@ -32,16 +32,20 @@ def users():
         flash('Доступ запрещён. Требуются права администратора.', 'danger')
         return redirect(url_for('admin.dashboard'))
     
+    #Извлечение параметров запроса
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '')
     
-    query = User.query
+    #Построение запроса с поиском
+    query = User.query #объект запроса SQLAlchemy к таблице users
     if search:
         query = query.filter(User.username.ilike(f'%{search}%') | User.email.ilike(f'%{search}%'))
     
     users = query.order_by(User.id).paginate(page=page, per_page=20)
     return render_template('admin/users.html', users=users, search=search)
 
+
+#эндпоинт обрабатывает POST-запросы на изменение роли пользователя
 @admin_bp.route('/users/<int:user_id>/change-role', methods=['POST'])
 @login_required
 def change_role(user_id):

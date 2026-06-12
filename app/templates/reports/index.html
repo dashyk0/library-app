@@ -58,9 +58,6 @@
         <h2 class="section-title">Популярные книги</h2>
         <div class="section-links">
             <a href="{{ url_for('reports.popular_books') }}" class="view-all-link">Подробнее →</a>
-            {% if current_user.is_admin() %}
-            <a href="{{ url_for('reports.popular_books_advanced') }}" class="view-all-link advanced-link">Расширенный отчёт →</a>
-            {% endif %}
         </div>
     </div>
 

@@ -45,12 +45,7 @@
             <a href="{{ url_for('books.create') }}" class="action-btn">
                 <i class="fas fa-plus-circle"></i> Добавить книгу
             </a>
-            <a href="{{ url_for('authors.index') }}" class="action-btn">
-                <i class="fas fa-feather-alt"></i> Авторы
-            </a>
-            <a href="{{ url_for('readers.index') }}" class="action-btn">
-                <i class="fas fa-users"></i> Читатели
-            </a>
+    
             <a href="{{ url_for('loans.select_book') }}" class="action-btn">
                 <i class="fas fa-exchange-alt"></i> Выдать книгу
             </a>
@@ -60,6 +55,12 @@
             <a href="{{ url_for('reports.popular_books') }}" class="action-btn">
                 <i class="fas fa-chart-bar"></i> Популярные книги
             </a>
+            <a href="{{ url_for('authors.index') }}" class="action-btn">
+                <i class="fas fa-feather-alt"></i> Авторы
+            </a>
+            <a href="{{ url_for('readers.index') }}" class="action-btn">
+                <i class="fas fa-users"></i> Читатели
+            </a>
             {% if current_user.is_librarian() %}
             <a href="{{ url_for('books.delete_select') }}" class="action-btn">
                 <i class="fas fa-trash-alt"></i> Удалить книгу
@@ -68,9 +69,6 @@
             {% if current_user.is_admin() %}
             <a href="{{ url_for('admin.users') }}" class="action-btn">
                 <i class="fas fa-user-cog"></i> Пользователи
-            </a>
-            <a href="{{ url_for('reports.popular_books_advanced') }}" class="action-btn">
-                <i class="fas fa-chart-line"></i> Расширенный отчёт
             </a>
             <a href="{{ url_for('reports.librarians_stats') }}" class="action-btn">
                 <i class="fas fa-chart-simple"></i> Рейтинг библиотекарей

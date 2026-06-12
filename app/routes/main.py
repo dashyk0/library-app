@@ -1,10 +1,19 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
 from .. import db
 from ..models import Loan
 
 main_bp = Blueprint('main', __name__)
+
+# Разрешённые расширения для файлов
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    """Проверка разрешённого расширения"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @main_bp.route('/')
 def index():
@@ -74,4 +83,44 @@ def change_password():
     current_user.set_password(new_password)
     db.session.commit()
     flash('Пароль успешно изменён!', 'success')
+    return redirect(url_for('main.profile'))
+
+# Загрузка аватара
+@main_bp.route('/upload-avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    if 'avatar' not in request.files:
+        flash('Файл не выбран', 'danger')
+        return redirect(url_for('main.profile'))
+    
+    file = request.files['avatar']
+    if file.filename == '':
+        flash('Файл не выбран', 'danger')
+        return redirect(url_for('main.profile'))
+    
+    if file and allowed_file(file.filename):
+        # Удаляем старый аватар если есть
+        if current_user.avatar:
+            old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'avatars', current_user.avatar)
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        
+        # Сохраняем новый аватар
+        filename = secure_filename(file.filename)
+        unique_filename = f"avatar_{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+        
+        # Создаём папку для аватаров если её нет
+        avatar_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'avatars')
+        os.makedirs(avatar_dir, exist_ok=True)
+        
+        filepath = os.path.join(avatar_dir, unique_filename)
+        file.save(filepath)
+        
+        current_user.avatar = unique_filename
+        db.session.commit()
+        
+        flash('Аватар успешно обновлён!', 'success')
+    else:
+        flash('Неподдерживаемый формат файла. Используйте JPG, PNG или GIF', 'danger')
+    
     return redirect(url_for('main.profile'))
